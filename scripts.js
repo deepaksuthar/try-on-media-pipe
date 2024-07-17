@@ -10,6 +10,8 @@ let runningMode = "IMAGE";
 let enableWebcamButton;
 let webcamRunning = false;
 
+let isFlipped = false;
+
 // Before we can use HandLandmarker class we must wait for it to finish
 // loading. Machine Learning models can be large and take a moment to
 // get everything needed to run.
@@ -163,10 +165,12 @@ async function enableCam(event) {
             webcamElement.classList.remove('flip');
             canvasElement.classList.remove('flip');
             canvasElement.classList.add('noflip');
+            isFlipped = false;
         } else {
             webcamElement.classList.add('flip');
             canvasElement.classList.remove('noflip');
             canvasElement.classList.add('flip');
+            isFlipped = true;
         }
 
         webcamElement.addEventListener("loadeddata", predictWebcam);
@@ -292,10 +296,16 @@ function placeRing(ctx, landmarks) {
     const yLW2 = landmarkW2.y * canvasHeight;
 
     const fingerWidth = Math.sqrt(Math.pow(xLW2 - xLW1, 2) + Math.pow(yLW2 - yLW1, 2));
-    
+
     divToPlace.style.width = `${fingerWidth * 800}px`;
     // Apply styles to the div
     divToPlace.style.position = `absolute`;
+
+    newX = isFlipped ? newX * -1: newX;
+    rotateDeg+= 90;
+
+    rotateDeg = isFlipped ? -rotateDeg : rotateDeg;
+
     divToPlace.style.left = `${newX}px`;
     divToPlace.style.top = `${newY}px`;
     divToPlace.style.transform = `rotate(${rotateDeg+90}deg) translateX(${translateX}px) translateY(${translateY}px)`;

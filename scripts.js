@@ -297,11 +297,11 @@ function placeRing(ctx, landmarks) {
 
     const fingerWidth = Math.sqrt(Math.pow(xLW2 - xLW1, 2) + Math.pow(yLW2 - yLW1, 2));
 
-    divToPlace.style.width = `${fingerWidth * 100}px`;
+    divToPlace.style.width = `${fingerWidth * 4}px`;
     // Apply styles to the div
     divToPlace.style.position = `absolute`;
 
-    newX = isFlipped ? -newX : newX;
+    newX = isFlipped ? (canvasWidth-newX) : newX;
     rotateDeg+= 90;
 
     rotateDeg = isFlipped ? -rotateDeg : rotateDeg;

@@ -90,7 +90,9 @@ html, body {
   }
   
   .output_canvas {
-    
+    transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+    -moz-transform: rotateY(0deg);
   }
   
   .detectOnClick {

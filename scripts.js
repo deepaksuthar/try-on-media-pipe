@@ -237,7 +237,7 @@ function drawLandmarksWithNumbers(ctx, landmarks, options) {
     }
 }
 
-function placeRing(ctx, landmarks1, landmarks2) {
+function placeRing(ctx, landmark1, landmark2) {
     // Get canvas dimensions
     const canvasRect = canvasElement.getBoundingClientRect();
     const canvasWidth = canvasRect.width;

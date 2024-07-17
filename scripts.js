@@ -143,7 +143,9 @@ import {
   
     // getUsermedia parameters to force video but not audio.
     const constraints = {
-      video: true
+      video: {
+        facingMode: { ideal: "environment" } // Prefer back camera
+      }
     };
   
     // Activate the webcam stream.

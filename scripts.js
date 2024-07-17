@@ -282,6 +282,6 @@ function placeRing(ctx, landmark1, landmark2) {
     divToPlace.style.position = `absolute`;
     divToPlace.style.left = `${newX}px`;
     divToPlace.style.top = `${newY}px`;
-    //divToPlace.style.transform = `rotate(${rotateDeg}deg) translateX(${translateX}px) translateY(${translateY}px)`;
+    divToPlace.style.transform = `rotate(${rotateDeg}deg) translateX(${translateX}px) translateY(${translateY}px)`;
     divToPlace.style.transformOrigin = '0 0';
 }

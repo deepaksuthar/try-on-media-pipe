@@ -155,9 +155,9 @@ import {
       // Check if the facing mode is environment and add flip class
       const videoTracks = stream.getVideoTracks();
       if (videoTracks.length > 0 && videoTracks[0].getSettings().facingMode === 'environment') {
-        webcamElement.classList.add('flip');
-      } else {
         webcamElement.classList.remove('flip');
+      } else {
+        webcamElement.classList.add('flip');
       }
   
       webcamElement.addEventListener("loadeddata", predictWebcam);

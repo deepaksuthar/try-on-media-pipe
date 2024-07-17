@@ -201,10 +201,10 @@ async function predictWebcam() {
 
     if (handLandmarkerResult.landmarks) {
         for (const landmarks of handLandmarkerResult.landmarks) {
-            drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+            /*drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
                 color: "#00FF00",
                 lineWidth: 5
-            });
+            });*/
             // drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
             drawLandmarksWithNumbers(canvasCtx, landmarks, {
                 color: "#FF0000",

@@ -278,10 +278,12 @@ function placeRing(ctx, landmark1, landmark2) {
     const translateX = 0; // Assuming no additional translation needed
     const translateY = 0; // Assuming no additional translation needed
 
+    const fingerWidth = Math.sqrt(Math.pow(xL2 - xL1, 2) + Math.pow(yL2 - yL1, 2));
+    divToPlace.style.width = `${fingerWidth * 100}px`;
     // Apply styles to the div
     divToPlace.style.position = `absolute`;
     divToPlace.style.left = `${newX}px`;
     divToPlace.style.top = `${newY}px`;
-    divToPlace.style.transform = `rotate(${rotateDeg}deg) translateX(${translateX}px) translateY(${translateY}px)`;
+    divToPlace.style.transform = `rotate(${rotateDeg+90}deg) translateX(${translateX}px) translateY(${translateY}px)`;
     divToPlace.style.transformOrigin = '0 0';
 }

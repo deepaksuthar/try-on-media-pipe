@@ -257,10 +257,10 @@ function placeRing(ctx, landmark1, landmark2) {
     // Calculate rotation angle
     const rotateDeg = Math.atan2(yL2 - yL1, xL2 - xL1) * (180 / Math.PI);
 
-
+    const containerRect = viewContainer.getBoundingClientRect();
     // Get container dimensions (assuming the container is the same size as the viewport)
-    const containerWidth = viewContainer.width;
-    const containerHeight = viewContainer.height;
+    const containerWidth = containerRect.width;
+    const containerHeight = containerRect.height;
 
     // Calculate scale factors
     const scaleX = containerWidth / canvasWidth;

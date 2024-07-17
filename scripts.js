@@ -3,7 +3,38 @@ import {
     FilesetResolver
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
-import KalmanFilter from 'https://cdn.jsdelivr.net/npm/kalmanjs-updated/lib/kalman.min.js'
+class SimpleKalmanFilter {
+    constructor(R, Q) {
+        this.R = R; // noise covariance
+        this.Q = Q; // process covariance
+        this.A = 1;
+        this.B = 0;
+        this.C = 1;
+        this.cov = NaN;
+        this.x = NaN; // estimated signal without noise
+    }
+
+    filter(z) {
+        if (isNaN(this.x)) {
+            this.x = (1 / this.C) * z;
+            this.cov = (1 / this.C) * this.Q * (1 / this.C);
+        } else {
+            // Compute prediction
+            let predX = (this.A * this.x) + (this.B * 0);
+            let predCov = ((this.A * this.cov) * this.A) + this.R;
+
+            // Kalman gain
+            let K = predCov * this.C * (1 / ((this.C * predCov * this.C) + this.Q));
+
+            // Correction
+            this.x = predX + K * (z - (this.C * predX));
+            this.cov = predCov - (K * this.C * predCov);
+        }
+
+        return this.x;
+    }
+}
+
 
 const demosSection = document.getElementById("demos");
 
@@ -245,8 +276,8 @@ function drawLandmarksWithNumbers(ctx, landmarks, options) {
 }
 
 // Kalman filters for smoothing coordinates
-const kalmanFilterX = new KalmanFilter({ R: 0.01, Q: 3 });
-const kalmanFilterY = new KalmanFilter({ R: 0.01, Q: 3 });
+const kalmanFilterX = new SimpleKalmanFilter({ R: 0.01, Q: 3 });
+const kalmanFilterY = new SimpleKalmanFilter({ R: 0.01, Q: 3 });
 
 function placeRing(ctx, landmarks) {
 

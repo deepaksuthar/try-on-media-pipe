@@ -263,7 +263,7 @@ function placeRing(ctx, landmarks) {
     const targetY = (yL1 + yL2) / 2;
 
     // Calculate rotation angle
-    const rotateDeg = Math.atan2(yL2 - yL1, xL2 - xL1) * (180 / Math.PI);
+    let rotateDeg = Math.atan2(yL2 - yL1, xL2 - xL1) * (180 / Math.PI);
 
     const containerRect = viewContainer.getBoundingClientRect();
     // Get container dimensions (assuming the container is the same size as the viewport)
@@ -279,7 +279,7 @@ function placeRing(ctx, landmarks) {
     console.log(containerHeight + " : "+canvasHeight );
 
     // Calculate new position in container coordinates
-    const newX = targetX * scaleX;
+    let newX = targetX * scaleX;
     const newY = targetY * scaleY;
 
     // Calculate translation values (translateX and translateY)

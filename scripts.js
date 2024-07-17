@@ -155,12 +155,12 @@ import {
   
   async function predictWebcam() {
     canvasElement.style =
-      "width: " +
-      webcamElement.videoWidth +
+      "width: 100%; ";
+      /*webcamElement.videoWidth +
       "px;" +
       "height: " +
       webcamElement.videoHeight +
-      "px;";
+      "px;";*/
     canvasElement.width = webcamElement.videoWidth;
     canvasElement.height = webcamElement.videoHeight;
   

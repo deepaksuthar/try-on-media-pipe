@@ -244,11 +244,11 @@ function placeRing(ctx, landmark1, landmark2) {
     const canvasWidth = canvasRect.width;
     const canvasHeight = canvasRect.height;
 
-    const xL1 = landmark1.x * ctx.canvas.width;
-    const yL1 = landmark1.y * ctx.canvas.height;
+    const xL1 = landmark1.x * canvasWidth;
+    const yL1 = landmark1.y * canvasHeight;
 
-    const xL2 = landmark2.x * ctx.canvas.width;
-    const yL2 = landmark2.y * ctx.canvas.height;
+    const xL2 = landmark2.x * canvasWidth;
+    const yL2 = landmark2.y * canvasHeight;
 
     // Calculate the middle point
     const targetX = (xL1 + xL2) / 2;

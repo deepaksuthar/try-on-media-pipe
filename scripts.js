@@ -98,7 +98,7 @@ import {
   // Demo 2: Continuously grab image from webcam stream and detect it.
   ********************************************************************/
   
-  const videoHeight = "360px";
+  const videoHeight = "640px";
   const videoWidth = "480px";
   
   const liveView = document.getElementById("liveView");

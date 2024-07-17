@@ -297,7 +297,7 @@ function placeRing(ctx, landmarks) {
 
     const fingerWidth = Math.sqrt(Math.pow(xLW2 - xLW1, 2) + Math.pow(yLW2 - yLW1, 2));
 
-    divToPlace.style.width = `${fingerWidth * 4}px`;
+    divToPlace.style.width = `${fingerWidth * 1}px`;
     // Apply styles to the div
     divToPlace.style.position = `absolute`;
 

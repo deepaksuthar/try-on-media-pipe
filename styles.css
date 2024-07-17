@@ -25,11 +25,14 @@ html, body {
   video {
     clear: both;
     display: block;
+  }
+  
+  .flip {
     transform: rotateY(180deg);
     -webkit-transform: rotateY(180deg);
     -moz-transform: rotateY(180deg);
   }
-  
+
   section {
     opacity: 1;
     transition: opacity 500ms ease-in-out;

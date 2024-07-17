@@ -3,6 +3,8 @@ import {
     FilesetResolver
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
+import KalmanFilter from 'https://cdn.jsdelivr.net/npm/kalmanjs-updated/lib/kalman.min.js'
+
 const demosSection = document.getElementById("demos");
 
 let handLandmarker = undefined;

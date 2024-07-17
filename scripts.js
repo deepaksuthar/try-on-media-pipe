@@ -104,7 +104,7 @@ const videoWidth = "480px";
 const liveView = document.getElementById("liveView");
 const webcamElement = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
-const viewContainer = document.getElementById("liveView");
+const viewContainer = document.getElementById("viewContainer");
 const canvasCtx = canvasElement.getContext("2d");
 
 const divToPlace = document.getElementById('ring-to-place-1');

@@ -207,7 +207,7 @@ async function predictWebcam() {
                 lineWidth: 2
             });
 
-            placeRing(canvasCtx, landmarks[9], landmarks[10]);
+            placeRing(canvasCtx, landmarks);
         }
     }
     canvasCtx.restore();
@@ -238,7 +238,11 @@ function drawLandmarksWithNumbers(ctx, landmarks, options) {
     }
 }
 
-function placeRing(ctx, landmark1, landmark2) {
+function placeRing(ctx, landmarks) {
+
+    const landmark1 = landmarks[9];
+    const landmark2 = landmarks[10];
+
     // Get canvas dimensions
     const canvasRect = canvasElement.getBoundingClientRect();
     const canvasWidth = canvasRect.width;
@@ -278,7 +282,10 @@ function placeRing(ctx, landmark1, landmark2) {
     const translateX = 0; // Assuming no additional translation needed
     const translateY = 0; // Assuming no additional translation needed
 
-    const fingerWidth = Math.sqrt(Math.pow(xL2 - xL1, 2) + Math.pow(yL2 - yL1, 2));
+    const landmarkW1 = landmarks[5];
+    const landmarkW2 = landmarks[9];
+
+    const fingerWidth = Math.sqrt(Math.pow(landmarkW2.x - landmarkW1.x, 2) + Math.pow(landmarkW2.y - landmarkW1.y, 2));
     divToPlace.style.width = `${fingerWidth * 100}px`;
     // Apply styles to the div
     divToPlace.style.position = `absolute`;

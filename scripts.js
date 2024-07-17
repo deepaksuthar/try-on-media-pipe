@@ -159,7 +159,7 @@ import {
         canvasElement.classList.remove('flip');
       } else {
         webcamElement.classList.add('flip');
-        canvasElement.classList.remove('flip');
+        canvasElement.classList.add('flip');
       }
   
       webcamElement.addEventListener("loadeddata", predictWebcam);

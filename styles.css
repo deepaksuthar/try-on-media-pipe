@@ -1,6 +1,10 @@
-body {
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     font-family: roboto;
-    margin: 2em;
     color: #3d3d3d;
     --mdc-theme-primary: #007f8b;
     --mdc-theme-on-primary: #f1f3f4;
@@ -54,7 +58,6 @@ body {
     position: relative;
     float: left;
     width: 48%;
-    margin: 2% 1%;
     cursor: pointer;
   }
   
@@ -97,13 +100,28 @@ body {
     width: 100%;
   }
   
+  #webcamButton {
+    position: absolute;
+    bottom: 100px;
+  }
+
+  
+  #liveView {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
   #handOutline {
     position: absolute;
-    top: 10px; /* Adjust margin as needed */
-    left: 10px; /* Adjust margin as needed */
-    width: calc(100% - 20px); /* Adjust width to fit within margins */
-    height: calc(100% - 20px); /* Adjust height to fit within margins */
+    width: calc(100% - 40px); /* Adjust width to fit within margins */
+    height: auto; /* Maintain aspect ratio */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     object-fit: contain; /* Maintain aspect ratio */
     pointer-events: none; /* Ensure the outline doesn't interfere with clicks */
   }
-  

@@ -97,3 +97,13 @@ body {
     width: 100%;
   }
   
+  #handOutline {
+    position: absolute;
+    top: 10px; /* Adjust margin as needed */
+    left: 10px; /* Adjust margin as needed */
+    width: calc(100% - 20px); /* Adjust width to fit within margins */
+    height: calc(100% - 20px); /* Adjust height to fit within margins */
+    object-fit: contain; /* Maintain aspect ratio */
+    pointer-events: none; /* Ensure the outline doesn't interfere with clicks */
+  }
+  

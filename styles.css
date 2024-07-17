@@ -122,6 +122,6 @@ html, body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    object-fit: contain; /* Maintain aspect ratio */
+    object-fit: scale-down; /* Maintain aspect ratio */
     pointer-events: none; /* Ensure the outline doesn't interfere with clicks */
   }

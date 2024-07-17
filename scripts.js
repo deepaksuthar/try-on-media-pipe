@@ -106,6 +106,8 @@ const webcamElement = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
 const canvasCtx = canvasElement.getContext("2d");
 
+const divToPlace = document.getElementById('ring-to-place-1');
+
 // Check if webcam access is supported.
 function hasGetUserMedia() {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
@@ -198,7 +200,13 @@ async function predictWebcam() {
                 color: "#00FF00",
                 lineWidth: 5
             });
-            drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
+            // drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
+            drawLandmarksWithNumbers(canvasCtx, landmarks, {
+                color: "#FF0000",
+                lineWidth: 2
+            });
+
+            placeRing(landmarks[9], landmarks[10]);
         }
     }
     canvasCtx.restore();
@@ -207,4 +215,63 @@ async function predictWebcam() {
     if (webcamRunning === true) {
         window.requestAnimationFrame(predictWebcam);
     }
+}
+
+
+function drawLandmarksWithNumbers(ctx, landmarks, options) {
+    const { color, lineWidth } = options;
+    ctx.fillStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.font = "12px Arial";
+
+    for (let i = 0; i < landmarks.length; i++) {
+        const landmark = landmarks[i];
+        const x = landmark.x * ctx.canvas.width;
+        const y = landmark.y * ctx.canvas.height;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.fillText(i, x + 5, y + 5); // Display the landmark index number
+    }
+}
+
+function placeRing(ctx, landmarks1, landmarks2) {
+    // Get canvas dimensions
+    const canvasRect = canvas.getBoundingClientRect();
+    const canvasWidth = canvasRect.width;
+    const canvasHeight = canvasRect.height;
+
+    const xL1 = landmark1.x * ctx.canvas.width;
+    const yL1 = landmark1.y * ctx.canvas.height;
+
+    const xL2 = landmark2.x * ctx.canvas.width;
+    const yL2 = landmark2.y * ctx.canvas.height;
+
+    // Calculate the middle point
+    const targetX = (xL1 + xL2) / 2;
+    const targetY = (yL1 + yL2) / 2;
+
+    // Calculate rotation angle
+    const rotateDeg = Math.atan2(yL2 - yL1, xL2 - xL1) * (180 / Math.PI);
+
+
+    // Get container dimensions (assuming the container is the same size as the viewport)
+    const containerWidth = window.innerWidth;
+    const containerHeight = window.innerHeight;
+
+    // Calculate scale factors
+    const scaleX = containerWidth / canvasWidth;
+    const scaleY = containerHeight / canvasHeight;
+
+    // Calculate new position in container coordinates
+    const newX = targetX * scaleX;
+    const newY = targetY * scaleY;
+
+    // Apply styles to the div
+    divToPlace.style.left = `${newX}px`;
+    divToPlace.style.top = `${newY}px`;
+    divToPlace.style.transform = `rotate(${rotateDeg}deg) translateX(${translateX}px) translateY(${translateY}px)`;
+    divToPlace.style.transformOrigin = '0 0';
 }

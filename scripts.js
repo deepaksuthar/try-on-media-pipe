@@ -266,6 +266,8 @@ function placeRing(ctx, landmark1, landmark2) {
     const scaleX = containerWidth / canvasWidth;
     const scaleY = containerHeight / canvasHeight;
 
+    console.log(scaleX + " : "+scaleY );
+
     // Calculate new position in container coordinates
     const newX = targetX * scaleX;
     const newY = targetY * scaleY;

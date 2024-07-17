@@ -156,8 +156,10 @@ import {
       const videoTracks = stream.getVideoTracks();
       if (videoTracks.length > 0 && videoTracks[0].getSettings().facingMode === 'environment') {
         webcamElement.classList.remove('flip');
+        canvasElement.classList.remove('flip');
       } else {
         webcamElement.classList.add('flip');
+        canvasElement.classList.remove('flip');
       }
   
       webcamElement.addEventListener("loadeddata", predictWebcam);

@@ -16,15 +16,17 @@
 <body>
     <section id="demos" class="invisible">
         <div id="liveView" class="videoView">
-           
-            <div style="position: relative; width: 100vw; height: 100vh;">
+
+            <div style="position: absolute;top: 0;width: 100vw; display: flex;">
                 <video id="webcam" style="position: absolute; width: 100%;" autoplay playsinline></video>
                 <canvas class="output_canvas" id="output_canvas"
                     style="position: absolute; left: 0px; top: 0px;"></canvas>
-                <img id="handOutline" src="./Images/five.png" alt="Hand Outline" />
+                <div id="handOutlineContainer">
+                    <img id="handOutline" src="./Images/five.png" alt="Hand Outline" />
+                </div>
             </div>
 
-             <button id="webcamButton" class="mdc-button mdc-button--raised">
+            <button id="webcamButton" class="mdc-button mdc-button--raised">
                 <span class="mdc-button__ripple"></span>
                 <span class="mdc-button__label">ENABLE WEBCAM</span>
             </button>

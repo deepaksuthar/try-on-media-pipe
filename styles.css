@@ -122,13 +122,23 @@ html, body {
     align-items: center;
   }
   
-  #handOutline {
+  #handOutlineContainer {
+
     position: absolute;
-    width: calc(100% - 40px); /* Adjust width to fit within margins */
-    height: auto; /* Maintain aspect ratio */
+    top: 0px;
+    width: 100%;
+    height: 100%;
+
+    pointer-events: none; /* Ensure the outline doesn't interfere with clicks */
+}
+
+#handOutline {
+    position: absolute;
+    width: 80%;
+    height: 80%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    object-fit: scale-down; /* Maintain aspect ratio */
-    pointer-events: none; /* Ensure the outline doesn't interfere with clicks */
-  }
+    object-fit: scale-down;
+    pointer-events: none;
+}

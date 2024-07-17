@@ -206,7 +206,7 @@ async function predictWebcam() {
                 lineWidth: 2
             });
 
-            placeRing(landmarks[9], landmarks[10]);
+            placeRing(canvasCtx, landmarks[9], landmarks[10]);
         }
     }
     canvasCtx.restore();

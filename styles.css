@@ -33,6 +33,12 @@ html, body {
     -moz-transform: rotateY(180deg);
   }
 
+  .noflip {
+    transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+    -moz-transform: rotateY(0deg);
+  }
+
   section {
     opacity: 1;
     transition: opacity 500ms ease-in-out;

@@ -157,8 +157,10 @@ import {
       if (videoTracks.length > 0 && videoTracks[0].getSettings().facingMode === 'environment') {
         webcamElement.classList.remove('flip');
         canvasElement.classList.remove('flip');
+        canvasElement.classList.add('noflip');
       } else {
         webcamElement.classList.add('flip');
+        canvasElement.classList.remove('noflip');
         canvasElement.classList.add('flip');
       }
   

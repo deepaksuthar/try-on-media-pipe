@@ -242,6 +242,10 @@ function drawLandmarksWithNumbers(ctx, landmarks, options) {
     }
 }
 
+// Kalman filters for smoothing coordinates
+const kalmanFilterX = new KalmanFilter({ R: 0.01, Q: 3 });
+const kalmanFilterY = new KalmanFilter({ R: 0.01, Q: 3 });
+
 function placeRing(ctx, landmarks) {
 
     const landmark1 = landmarks[9];
@@ -279,8 +283,11 @@ function placeRing(ctx, landmarks) {
     console.log(containerHeight + " : "+canvasHeight );
 
     // Calculate new position in container coordinates
-    let newX = targetX * scaleX;
-    const newY = targetY * scaleY;
+    //let newX = targetX * scaleX;
+    //const newY = targetY * scaleY;
+
+    let newX = kalmanFilterX.filter(targetX * scaleX);
+    const newY = kalmanFilterY.filter(targetY * scaleY);
 
     // Calculate translation values (translateX and translateY)
     const translateX = 0; // Assuming no additional translation needed

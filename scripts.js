@@ -104,6 +104,7 @@ const videoWidth = "480px";
 const liveView = document.getElementById("liveView");
 const webcamElement = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
+const viewContainer = document.getElementById("liveView");
 const canvasCtx = canvasElement.getContext("2d");
 
 const divToPlace = document.getElementById('ring-to-place-1');
@@ -258,8 +259,8 @@ function placeRing(ctx, landmark1, landmark2) {
 
 
     // Get container dimensions (assuming the container is the same size as the viewport)
-    const containerWidth = window.innerWidth;
-    const containerHeight = window.innerHeight;
+    const containerWidth = viewContainer.width;
+    const containerHeight = viewContainer.height;
 
     // Calculate scale factors
     const scaleX = containerWidth / canvasWidth;

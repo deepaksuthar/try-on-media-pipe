@@ -285,8 +285,15 @@ function placeRing(ctx, landmarks) {
     const landmarkW1 = landmarks[5];
     const landmarkW2 = landmarks[9];
 
-    const fingerWidth = Math.sqrt(Math.pow(landmarkW2.x - landmarkW1.x, 2) + Math.pow(landmarkW2.y - landmarkW1.y, 2));
-    divToPlace.style.width = `${fingerWidth * 100}px`;
+    const xLW1 = landmarkW1.x * canvasWidth;
+    const yLW1 = landmarkW1.y * canvasHeight;
+
+    const xLW2 = landmarkW2.x * canvasWidth;
+    const yLW2 = landmarkW2.y * canvasHeight;
+
+    const fingerWidth = Math.sqrt(Math.pow(xLW2 - xLW1, 2) + Math.pow(yLW2 - yLW1, 2));
+    
+    divToPlace.style.width = `${fingerWidth * 800}px`;
     // Apply styles to the div
     divToPlace.style.position = `absolute`;
     divToPlace.style.left = `${newX}px`;

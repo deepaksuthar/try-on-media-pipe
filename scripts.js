@@ -301,7 +301,7 @@ function placeRing(ctx, landmarks) {
     // Apply styles to the div
     divToPlace.style.position = `absolute`;
 
-    newX = isFlipped ? newX * -1: newX;
+    newX = isFlipped ? -newX : newX;
     rotateDeg+= 90;
 
     rotateDeg = isFlipped ? -rotateDeg : rotateDeg;

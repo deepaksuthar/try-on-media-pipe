@@ -54,7 +54,9 @@ const createHandLandmarker = async () => {
             delegate: "GPU"
         },
         runningMode: runningMode,
-        numHands: 2
+        numHands: 1,
+        minHandDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.7
     });
     demosSection.classList.remove("invisible");
 };
@@ -207,45 +209,20 @@ const referencePositions = [
     { "x": 0.3627241551876068, "y": 0.31447169184684753, "z": -0.06592313200235367 }
 ];
 
-function isHandFlat(landmarks) {
-    
-    const threshold = 0.05; // Define an appropriate threshold value
-
-    // Indexes of landmarks to exclude (finger tips)
-    const excludedIndexes = [4, 8, 12, 16, 20]; // Example indexes, adjust based on your landmark model
-
-    for (let i = 0; i < landmarks.length; i++) {
-        if (excludedIndexes.includes(i)) {
-            continue; // Skip comparison for excluded landmarks (tips)
-        }
-
-        const landmark = landmarks[i];
-        const reference = referencePositions[i];
-
-        const dx = Math.abs(landmark.x - reference.x);
-        const dy = Math.abs(landmark.y - reference.y);
-        const dz = Math.abs(landmark.z - reference.z);
-
-        if (dx > threshold || dy > threshold || dz > threshold) {
-            return false; // Landmark is out of the threshold range
-        }
-    }
-
-    return true; // All non-tip landmarks are within the threshold range
-}
-
-function isHandFlat1(landmarks, referenceLandmarks) {
+function isHandFlat1(landmarks) {
     // Extract relevant landmarks for flatness check
     const landmarksToCheck = [
-        landmarks[0], // Example: Wrist or palm center
-        landmarks[1], // Example: Base of index finger
-        landmarks[2], // Example: Base of middle finger
-        landmarks[3], // Example: Base of ring finger
-        landmarks[4]  // Example: Base of pinky
+        landmarks[0],
+        landmarks[5],
+        landmarks[6],
+        landmarks[9],
+        landmarks[10],
+        landmarks[13],
+        landmarks[14]
     ];
 
     // Define a threshold for acceptable z-coordinate variance
-    const zThreshold = 0.02;
+    const zThreshold = 0.035;
 
     // Extract z-coordinates from reference landmarks
     const referenceZs = referencePositions.map(l => l.z);
@@ -257,13 +234,31 @@ function isHandFlat1(landmarks, referenceLandmarks) {
     });
 }
 
+function isHandFlatWithScreen(landmarks, referenceZ, zThreshold) {
+    // Landmarks to check for flatness
+    const indicesToCheck = [5, 6, 9, 10, 13, 14];
+
+    indicesToCheck.forEach(index => {
+        const landmark = landmarks[index];
+        if (landmark) {
+            const difference = Math.abs(landmark.z - referenceZ);
+            console.log(`Landmark ${index}:`);
+            console.log(`Math.abs(landmark.z - referenceZ): ${difference}`);
+            console.log(`zThreshold: ${zThreshold}`);
+            console.log(`Difference: ${difference > zThreshold ? 'Out of threshold' : 'Within threshold'}`);
+        } else {
+            console.log(`Landmark ${index} not found.`);
+        }
+    });
+}
+
 
 async function predictWebcam() {
     canvasElement.width = webcamElement.videoWidth;
     canvasElement.height = webcamElement.videoHeight;
 
     const minSide = Math.min(canvasElement.width, canvasElement.height);
-    const squareSize = minSide * 0.8;
+    const squareSize = minSide * 0.9;
     const squareX = (canvasElement.width - squareSize) / 2;
     const squareY = (canvasElement.height - squareSize) / 2;
 
@@ -324,13 +319,16 @@ async function predictWebcam() {
                 handFlat = isHandFlat1(landmarks);
 
                 if (allLandmarksInSquare) {
-                    console.log("Hand is in the square!");
+                    //console.log("Hand is in the square!");
                     landmarksToSave = landmarks;
                 }
 
                 if (handFlat) {
                     console.log("Hand is in the flat!");
                 }
+
+                console.log("landmarks[0],z = "+ landmarks[0].z);
+                console.log("5="+ landmarks[5].z +" 6="+ landmarks[6].z +" 9="+ landmarks[9].z +" 10="+ landmarks[10].z +" 13="+ landmarks[13].z +" 14="+ landmarks[14].z );
             }
 
             

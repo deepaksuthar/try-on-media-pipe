@@ -122,6 +122,7 @@ const webcamElement = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
 const viewContainer = document.getElementById("viewContainer");
 const canvasCtx = canvasElement.getContext("2d");
+const FinalCapturedImage = document.getElementById('CapturedImage')
 
 function hasGetUserMedia() {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
@@ -175,13 +176,25 @@ async function enableCam(event) {
             webcamElement.classList.remove('flip');
             canvasElement.classList.remove('flip');
             canvasElement.classList.add('noflip');
+            FinalCapturedImage.classList.remove('flip');
+            isFlipped = false;
         } else {
             webcamElement.classList.add('flip');
             canvasElement.classList.add('flip');
             canvasElement.classList.remove('noflip');
+            FinalCapturedImage.classList.add('flip');
+            isFlipped = true;
         }
 
         webcamElement.addEventListener("loadeddata", predictWebcam);
+
+        document.getElementById('CapturedImage').style.display = 'none';
+        enableWebcamButton.style.display = 'none';
+        captureButton.style.display = 'inline-block';
+
+        divToPlace.style.position = `absolute`;
+        divToPlace.style.left = `${-100}px`;
+        divToPlace.style.top = `${-100}px`;
     });
 }
 
@@ -318,7 +331,7 @@ async function predictWebcam() {
                 // Check if the hand is flat
                 handFlat = isHandFlat1(landmarks, 0.05 * squareSize/640);
 
-                if (allLandmarksInSquare) {
+                if (allLandmarksInSquare && handFlat) {
                     //console.log("Hand is in the square!");
                     landmarksToSave = landmarks;
                 }
@@ -347,7 +360,110 @@ async function predictWebcam() {
 var landmarksToSave;
 
 function captureImage() {
+   // Create a new canvas to capture the current frame
+   const canvas = document.createElement('canvas');
+   canvas.width = canvasElement.width;
+   canvas.height = canvasElement.height;
+   const context = canvas.getContext('2d');
 
-    console.log(landmarksToSave);
+   // Draw the current frame from the webcam onto the canvas
+   context.drawImage(webcamElement, 0, 0, canvas.width, canvas.height);
 
+   placeRing(context,landmarksToSave);
+
+   // Convert the canvas content to a data URL
+   const capturedImage = canvas.toDataURL('image/png');
+
+   // Display the captured image
+   document.getElementById('CapturedImage').src = capturedImage;
+   document.getElementById('CapturedImage').style.display = 'block';
+
+   // Stop the webcam
+   if (webcamElement.srcObject) {
+       webcamElement.srcObject.getTracks().forEach(track => track.stop());
+   }
+
+   // Show the enable camera button and hide the capture button
+   enableWebcamButton.style.display = 'inline-block';
+   captureButton.style.display = 'none';
+
+   // Reset webcam running state
+   webcamRunning = false;
+}
+
+
+const divToPlace = document.getElementById('ring-to-place-1');
+let isFlipped = false;
+function placeRing(ctx, landmarks) {
+
+    const landmark1 = landmarks[9];
+    const landmark2 = landmarks[10];
+
+    // Get canvas dimensions
+    const canvasRect = canvasElement.getBoundingClientRect();
+    const canvasWidth = canvasRect.width;
+    const canvasHeight = canvasRect.height;
+
+    const xL1 = landmark1.x * canvasWidth;
+    const yL1 = landmark1.y * canvasHeight;
+
+    const xL2 = landmark2.x * canvasWidth;
+    const yL2 = landmark2.y * canvasHeight;
+
+    // Calculate the middle point
+    const targetX = (xL1 + xL2) / 2;
+    const targetY = (yL1 + yL2) / 2;
+
+    // Calculate rotation angle
+    let rotateDeg = Math.atan2(yL2 - yL1, xL2 - xL1) * (180 / Math.PI);
+
+    const containerRect = viewContainer.getBoundingClientRect();
+    // Get container dimensions (assuming the container is the same size as the viewport)
+    const containerWidth = containerRect.width;
+    const containerHeight = containerRect.height;
+
+    // Calculate scale factors
+    const scaleX = containerWidth / canvasWidth;
+    const scaleY = containerHeight / canvasHeight;
+
+    console.log(scaleX + " : "+scaleY );
+    console.log(containerWidth + " : "+canvasWidth );
+    console.log(containerHeight + " : "+canvasHeight );
+
+    // Calculate new position in container coordinates
+    let newX = targetX;// * scaleX;
+    const newY = targetY;// * scaleY;
+
+    //let newX = kalmanFilterX.filter(targetX * scaleX);
+    //const newY = kalmanFilterY.filter(targetY * scaleY);
+
+    // Calculate translation values (translateX and translateY)
+    const translateX = 0; // Assuming no additional translation needed
+    const translateY = 0; // Assuming no additional translation needed
+
+    const landmarkW1 = landmarks[5];
+    const landmarkW2 = landmarks[9];
+
+    const xLW1 = landmarkW1.x * canvasWidth;
+    const yLW1 = landmarkW1.y * canvasHeight;
+
+    const xLW2 = landmarkW2.x * canvasWidth;
+    const yLW2 = landmarkW2.y * canvasHeight;
+
+    const fingerWidth = Math.sqrt(Math.pow(xLW2 - xLW1, 2) + Math.pow(yLW2 - yLW1, 2));
+
+    divToPlace.style.width = `${fingerWidth * 1}px`;
+    divToPlace.style.height = `${fingerWidth * 1}px`;
+    // Apply styles to the div
+    divToPlace.style.position = `absolute`;
+
+    newX = isFlipped ? (canvasWidth-newX) : newX;
+    //rotateDeg+= 90;
+
+    rotateDeg = isFlipped ? -rotateDeg : rotateDeg;
+
+    divToPlace.style.left = `${newX}px`;
+    divToPlace.style.top = `${newY}px`;
+    divToPlace.style.transform = `rotate(${rotateDeg+90}deg) translateX(${translateX}px) translateY(${translateY}px)`;
+    divToPlace.style.transformOrigin = '0 0';
 }

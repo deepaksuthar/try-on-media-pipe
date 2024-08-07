@@ -315,7 +315,7 @@ async function predictWebcam() {
         canvasCtx.restore();
 
         // Enable capture button only when hand is detected, all landmarks are in the square, and the hand is flat
-        captureButton.disabled = !(handDetected && allLandmarksInSquare);
+        captureButton.disabled = !(handDetected && allLandmarksInSquare && handFlat);
 
         // Call this function again to keep predicting when the browser is ready
         window.requestAnimationFrame(predictWebcam);

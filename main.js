@@ -209,7 +209,7 @@ const referencePositions = [
     { "x": 0.3627241551876068, "y": 0.31447169184684753, "z": -0.06592313200235367 }
 ];
 
-function isHandFlat1(landmarks) {
+function isHandFlat1(landmarks, zThreshold) {
     // Extract relevant landmarks for flatness check
     const landmarksToCheck = [
         landmarks[0],
@@ -222,7 +222,7 @@ function isHandFlat1(landmarks) {
     ];
 
     // Define a threshold for acceptable z-coordinate variance
-    const zThreshold = 0.035;
+    //const zThreshold = 0.035;
 
     // Extract z-coordinates from reference landmarks
     const referenceZs = referencePositions.map(l => l.z);
@@ -316,7 +316,7 @@ async function predictWebcam() {
                 });
 
                 // Check if the hand is flat
-                handFlat = isHandFlat1(landmarks);
+                handFlat = isHandFlat1(landmarks, 0.05 * squareSize/640);
 
                 if (allLandmarksInSquare) {
                     //console.log("Hand is in the square!");

@@ -112,6 +112,10 @@ html, body {
     bottom: 100px;
   }
 
+  #captureButton{
+    position: absolute;
+    bottom: 50px;
+  }
   
   #liveView {
     position: relative;

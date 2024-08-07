@@ -41,6 +41,7 @@ const demosSection = document.getElementById("demos");
 let handLandmarker = undefined;
 let runningMode = "IMAGE";
 let enableWebcamButton;
+let captureButton;
 let webcamRunning = false;
 
 let isFlipped = false;
@@ -153,11 +154,15 @@ function hasGetUserMedia() {
 if (hasGetUserMedia()) {
     enableWebcamButton = document.getElementById("webcamButton");
     enableWebcamButton.addEventListener("click", enableCam);
+    
+    captureButton = document.getElementById("captureButton");
+    captureButton.addEventListener("click", captureImage);
+
 } else {
     console.warn("getUserMedia() is not supported by your browser");
 }
 
-async function enableCam(event) {
+async function enableCam(event) {captureButton.style = "";
     if (!handLandmarker) {
         console.log("Wait! objectDetector not loaded yet.");
         return;
@@ -178,6 +183,8 @@ async function enableCam(event) {
 
     webcamRunning = true;
     enableWebcamButton.innerText = "DISABLE WEBCAM";
+
+    captureButton.style = "";
 
     // getUsermedia parameters to force video but not audio.
     const constraints = {
@@ -351,4 +358,11 @@ function placeRing(ctx, landmarks) {
     divToPlace.style.top = `${newY}px`;
     divToPlace.style.transform = `rotate(${rotateDeg+90}deg) translateX(${translateX}px) translateY(${translateY}px)`;
     divToPlace.style.transformOrigin = '0 0';
+}
+
+
+function captureImage(event){
+
+
+
 }

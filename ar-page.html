@@ -16,14 +16,14 @@
 <body>
     <section id="demos" class="invisible">
         <div id="liveView" class="videoView">
-            <div id="viewContainer" style="position: absolute;top: 0;width: 100vw; display: flex;">
+            <div id="viewContainer" style="position: absolute;top: 0;width: 100%; display: flex;">
                 <video id="webcam" style="position: absolute; width: 100%;" autoplay playsinline></video>
                 <canvas class="output_canvas" id="output_canvas" style="position: absolute; width: 100%;"></canvas>
                 <div id="handOutlineContainer">
                     <img id="handOutline" style="display: none; " src="./Images/five.png" alt="Hand Outline" />
                 </div>
                 <img id="CapturedImage" class="CapturedImage" style="display:none;position: absolute; width: 100%;" alt="Captured Image" />
-                <div id="ring-to-place-1">
+                <div id="ring-to-place-1" class="ring">
                     <img id="ring-1" src="./Images/ring.png" style="width: 100%; height: 100%; object-fit: scale-down; position: absolute; left: -50%; top: -50%;" alt="ring" />
                 </div>;
             </div>
@@ -31,7 +31,7 @@
             <button id="webcamButton" class="mdc-button mdc-button--raised">
                 <span class="mdc-button__ripple"></span>
                 <span class="mdc-button__label">ENABLE WEBCAM</span>
-            </button>
+            </button>   
             <button id="captureButton"  class="mdc-button mdc-button--raised">
                 <span class="mdc-button__ripple"></span>
                 <span class="mdc-button__label">Capture</span>

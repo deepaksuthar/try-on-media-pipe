@@ -484,7 +484,7 @@ function getRingPlacementAt(x,y) {
 
     // Calculate the length of the vector
     const lengthXY = Math.sqrt(vectorXY.x ** 2 + vectorXY.y ** 2);
-    var distance = lengthXY * 2/3;
+    var distance = lengthXY * 3/5;
     const d = distance;
     // Normalize the vector (unit vector in the direction of y from x)
     const unitVectorXY = {

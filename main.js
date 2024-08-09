@@ -3,6 +3,8 @@ import {
     FilesetResolver
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
+import { ImageSegmenter } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2";
+
 class SimpleKalmanFilter {
     constructor(R, Q) {
         this.R = R; // noise covariance
@@ -43,6 +45,9 @@ let enableWebcamButton;
 let captureButton;
 let webcamRunning = false;
 
+let imageSegmenter;
+let labels;
+
 // Before we can use HandLandmarker class we must wait for it to finish loading.
 const createHandLandmarker = async () => {
     const vision = await FilesetResolver.forVisionTasks(
@@ -63,62 +68,21 @@ const createHandLandmarker = async () => {
 };
 createHandLandmarker();
 
-// Demo 1: Grab a bunch of images from the page and detect them upon click.
-const imageContainers = document.getElementsByClassName("detectOnClick");
-
-for (let i = 0; i < imageContainers.length; i++) {
-    imageContainers[i].children[0].addEventListener("click", handleClick);
+async function createImageSegmenter() {
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm");
+    imageSegmenter = await ImageSegmenter.createFromOptions(vision, {
+        baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite",
+            delegate: "GPU"
+        },
+        runningMode: "IMAGE",
+        outputCategoryMask: true,
+        outputConfidenceMasks: false
+    });
 }
 
-async function handleClick(event) {
-    if (!handLandmarker) {
-        console.log("Wait for handLandmarker to load before clicking!");
-        return;
-    }
+createImageSegmenter();
 
-    if (runningMode === "VIDEO") {
-        runningMode = "IMAGE";
-        await handLandmarker.setOptions({ runningMode: "IMAGE" });
-    }
-
-    const allCanvas = event.target.parentNode.getElementsByClassName("canvas");
-    for (var i = allCanvas.length - 1; i >= 0; i--) {
-        const n = allCanvas[i];
-        n.parentNode.removeChild(n);
-    }
-
-    const handLandmarkerResult = await handLandmarker.detect(event.target);
-    const canvas = document.createElement("canvas");
-    canvas.setAttribute("class", "canvas");
-    canvas.setAttribute("width", event.target.naturalWidth + "px");
-    canvas.setAttribute("height", event.target.naturalHeight + "px");
-    canvas.style =
-        "left: 0px;" +
-        "top: 0px;" +
-        "width: " +
-        event.target.width +
-        "px;" +
-        "height: " +
-        event.target.height +
-        "px;";
-
-    event.target.parentNode.appendChild(canvas);
-    const cxt = canvas.getContext("2d");
-
-    for (const landmarks of handLandmarkerResult.landmarks) {
-        drawConnectors(cxt, landmarks, HAND_CONNECTIONS, {
-            color: "#00FF00",
-            lineWidth: 5
-        });
-        drawLandmarks(cxt, landmarks, { color: "#FF0000", lineWidth: 2 });
-    }
-}
-
-// Demo 2: Continuously grab image from webcam stream and detect it.
-const videoHeight = "640px";
-const videoWidth = "480px";
-
-const liveView = document.getElementById("liveView");
 const webcamElement = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
 const viewContainer = document.getElementById("viewContainer");
@@ -330,7 +294,7 @@ async function predictWebcam() {
                 });
 
                 // Check if the hand is flat
-                handFlat = isHandFlat1(landmarks, 0.05 * squareSize / 640);
+                handFlat = isHandFlat1(landmarks, 0.08 * squareSize / 640);
 
                 if (allLandmarksInSquare && handFlat) {
                     //console.log("Hand is in the square!");
@@ -364,7 +328,7 @@ function captureImage() {
     // Draw the current frame from the webcam onto the canvas
     context.drawImage(webcamElement, 0, 0, canvas.width, canvas.height);
 
-    placeRing(context, landmarksToSave);
+    //placeRing(context, landmarksToSave);
 
     // Convert the canvas content to a data URL
     const capturedImage = canvas.toDataURL('image/png');
@@ -384,7 +348,145 @@ function captureImage() {
 
     // Reset webcam running state
     webcamRunning = false;
+
+
+    processCapturedImage(capturedImage);
 }
+
+
+const processCapturedImage = async (capturedImage) => {
+
+    const img = new Image();
+    img.src = capturedImage;
+
+    // Wait for the image to load, then pass it to handLandmarker.detect
+    img.onload = async () => {
+
+
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasElement.width;
+        canvas.height = canvasElement.height;
+        const cxt = canvas.getContext('2d');
+
+
+        runningMode = "IMAGE";
+        await handLandmarker.setOptions({ runningMode: "IMAGE" });
+
+        // Detect hand landmarks
+        const handLandmarkerResult = await handLandmarker.detect(img);
+
+        if (handLandmarkerResult.landmarks.length > 0) {
+            const landmarks = handLandmarkerResult.landmarks[0];
+
+            // Create body-skin mask
+            const result = await imageSegmenter.segment(img);
+            labels = imageSegmenter.getLabels();
+            const imageData = cxt.getImageData(0, 0, canvas.width, canvas.height);
+            const mask = result.categoryMask.getAsUint8Array();
+
+            for (let i = 0; i < mask.length; i++) {
+                const category = labels[mask[i]];
+                if (category === "body-skin") {
+                    const alpha = mask[i] ? 255 : 0;
+                    imageData.data[i * 4 + 0] = 0;
+                    imageData.data[i * 4 + 1] = 0;
+                    imageData.data[i * 4 + 2] = 0;
+                    imageData.data[i * 4 + 3] = alpha;
+                } else {
+                    imageData.data[i * 4 + 3] = 0;
+                }
+            }
+
+            cxt.putImageData(imageData, 0, 0);
+
+
+
+            // Calculate width of middle finger part between landmarks 9 and 10
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+
+            const xL1 = landmarks[9].x * canvasWidth;
+            const yL1 = landmarks[9].y * canvasHeight;
+            const xL2 = landmarks[10].x * canvasWidth;
+            const yL2 = landmarks[10].y * canvasHeight;
+
+            // Calculate the midpoint between points 9 and 10
+            const midX = xL2;//(xL1 + xL2) / 2;
+            const midY = yL2;//(yL1 + yL2) / 2;
+
+            // Calculate the direction vector perpendicular to the line connecting points 9 and 10
+            const deltaX = xL2 - xL1;
+            const deltaY = yL2 - yL1;
+            const perpendicularX = -deltaY;
+            const perpendicularY = deltaX;
+
+            // Normalize the perpendicular vector
+            const magnitude = Math.sqrt(perpendicularX * perpendicularX + perpendicularY * perpendicularY);
+            const unitX = perpendicularX / magnitude;
+            const unitY = perpendicularY / magnitude;
+
+            // Find the width by checking in the perpendicular direction
+            let leftDistance = 0;
+            let rightDistance = 0;
+
+            let lPoint, rPoint;
+
+            // Move in the negative direction (left side)
+            while (true) {
+                const checkX = Math.round(midX + leftDistance * unitX);
+                const checkY = Math.round(midY + leftDistance * unitY);
+                const alphaIndex = (checkY * canvasWidth + checkX) * 4 + 3; // alpha is at the 4th position in RGBA
+
+                if (checkX < 0 || checkX >= canvasWidth || checkY < 0 || checkY >= canvasHeight || imageData.data[alphaIndex] === 0) {
+                    lPoint = { x: checkX, y: checkY };
+                    break;
+                }
+                leftDistance--;
+            }
+
+            // Move in the positive direction (right side)
+            while (true) {
+                const checkX = Math.round(midX + rightDistance * unitX);
+                const checkY = Math.round(midY + rightDistance * unitY);
+                const alphaIndex = (checkY * canvasWidth + checkX) * 4 + 3; // alpha is at the 4th position in RGBA
+
+                if (checkX < 0 || checkX >= canvasWidth || checkY < 0 || checkY >= canvasHeight || imageData.data[alphaIndex] === 0) {
+                    rPoint = { x: checkX, y: checkY };
+                    break;
+                }
+                rightDistance++;
+            }
+
+            const middleFingerWidth = Math.abs(leftDistance) + rightDistance;
+            const cPoint = { x: (lPoint.x + rPoint.x) / 2, y: (lPoint.y + rPoint.y) / 2 };
+            console.log('Segmentation Completed. Middle Finger Width:' + middleFingerWidth.toFixed(2));
+            console.log('Segmentation Completed. Middle Finger point:' + cPoint.x + " : " + cPoint.y);
+
+            // Draw the point at cPoint
+            cxt.beginPath();
+            cxt.arc(cPoint.x, cPoint.y, 2, 0, 2 * Math.PI); // Draws a circle with radius 2
+            cxt.fillStyle = 'red'; // Set the color of the point
+            cxt.fill(); // Fill the circle with the set color
+
+            // Optionally, draw the left and right points as well for visual reference
+            cxt.beginPath();
+            cxt.arc(lPoint.x, lPoint.y, 2, 0, 2 * Math.PI); // Draw left point
+            cxt.fillStyle = 'blue'; // Set the color of the left point
+            cxt.fill();
+
+            cxt.beginPath();
+            cxt.arc(rPoint.x, rPoint.y, 2, 0, 2 * Math.PI); // Draw right point
+            cxt.fillStyle = 'green'; // Set the color of the right point
+            cxt.fill();
+
+            document.getElementById("CapturedImageSeg").src = canvas.toDataURL('image/png');;
+            placeRing(cxt, landmarks);
+
+        } else {
+            console.log('No hand detected');
+        }
+    };
+};
 
 
 const divToPlace = document.getElementById('ring-to-place-1');
@@ -452,10 +554,13 @@ function placeRing(ctx, landmarks) {
     const xLW2 = landmarkW2.x * canvasWidth;
     const yLW2 = landmarkW2.y * canvasHeight;
 
-    const fingerWidth = Math.sqrt(Math.pow(xLW2 - xLW1, 2) + Math.pow(yLW2 - yLW1, 2));
+    let fingerWidth = Math.sqrt(Math.pow(xLW2 - xLW1, 2) + Math.pow(yLW2 - yLW1, 2));
 
-    divToPlace.style.width = `${fingerWidth * 0.9}px`;
-    divToPlace.style.height = `${fingerWidth * 0.9}px`;
+    console.log(`Finger width (without z): ${fingerWidth}`);
+    fingerWidth = Calculate3DWidth(landmarkW1, landmarkW2, canvasWidth, canvasHeight);
+
+    divToPlace.style.width = `${fingerWidth * 0.95}px`;
+    divToPlace.style.height = `${fingerWidth * 0.95}px`;
     // Apply styles to the div
     divToPlace.style.position = `absolute`;
 
@@ -473,9 +578,33 @@ function placeRing(ctx, landmarks) {
     checkHandSide(landmarks);
 }
 
+function Calculate3DWidth(landmarkW1, landmarkW2, canvasWidth, canvasHeight) {
 
-function getRingPlacementAt(x,y) {
-   
+    const zCompo = (canvasWidth + canvasHeight);// / 2;
+
+    const xLW1 = landmarkW1.x * canvasWidth;
+    const yLW1 = landmarkW1.y * canvasHeight;
+    const zLW1 = landmarkW1.z * zCompo; // Z coordinate of landmark 5
+
+    const xLW2 = landmarkW2.x * canvasWidth;
+    const yLW2 = landmarkW2.y * canvasHeight;
+    const zLW2 = landmarkW2.z * zCompo; // Z coordinate of landmark 9
+
+    // Calculate the finger width considering the z-coordinate as well
+    const fingerWidth = Math.sqrt(
+        Math.pow(xLW2 - xLW1, 2) +
+        Math.pow(yLW2 - yLW1, 2) +
+        Math.pow(zLW2 - zLW1, 2)  // Incorporating the z-coordinate
+    );
+
+    console.log(`Finger width (with z): ${fingerWidth}`);
+
+    return fingerWidth;
+}
+
+
+function getRingPlacementAt(x, y) {
+
     // Calculate the vector from x to y
     const vectorXY = {
         x: y.x - x.x,
@@ -484,7 +613,7 @@ function getRingPlacementAt(x,y) {
 
     // Calculate the length of the vector
     const lengthXY = Math.sqrt(vectorXY.x ** 2 + vectorXY.y ** 2);
-    var distance = lengthXY * 3/5;
+    var distance = lengthXY * 3 / 5;
     const d = distance;
     // Normalize the vector (unit vector in the direction of y from x)
     const unitVectorXY = {

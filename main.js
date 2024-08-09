@@ -50,7 +50,8 @@ const createHandLandmarker = async () => {
     );
     handLandmarker = await HandLandmarker.createFromOptions(vision, {
         baseOptions: {
-            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+            //modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task`,
             delegate: "GPU"
         },
         runningMode: runningMode,
@@ -131,7 +132,7 @@ function hasGetUserMedia() {
 if (hasGetUserMedia()) {
     enableWebcamButton = document.getElementById("webcamButton");
     enableWebcamButton.addEventListener("click", enableCam);
-    
+
     captureButton = document.getElementById("captureButton");
     captureButton.disabled = true; // Initially disable the Capture button
     captureButton.addEventListener("click", captureImage);
@@ -329,22 +330,16 @@ async function predictWebcam() {
                 });
 
                 // Check if the hand is flat
-                handFlat = isHandFlat1(landmarks, 0.05 * squareSize/640);
+                handFlat = isHandFlat1(landmarks, 0.05);// * squareSize / 640);
 
                 if (allLandmarksInSquare && handFlat) {
                     //console.log("Hand is in the square!");
                     landmarksToSave = landmarks;
                 }
 
-                if (handFlat) {
-                    console.log("Hand is in the flat!");
-                }
-
-                console.log("landmarks[0],z = "+ landmarks[0].z);
-                console.log("5="+ landmarks[5].z +" 6="+ landmarks[6].z +" 9="+ landmarks[9].z +" 10="+ landmarks[10].z +" 13="+ landmarks[13].z +" 14="+ landmarks[14].z );
             }
 
-            
+
         }
 
         canvasCtx.restore();
@@ -360,39 +355,41 @@ async function predictWebcam() {
 var landmarksToSave;
 
 function captureImage() {
-   // Create a new canvas to capture the current frame
-   const canvas = document.createElement('canvas');
-   canvas.width = canvasElement.width;
-   canvas.height = canvasElement.height;
-   const context = canvas.getContext('2d');
+    // Create a new canvas to capture the current frame
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasElement.width;
+    canvas.height = canvasElement.height;
+    const context = canvas.getContext('2d');
 
-   // Draw the current frame from the webcam onto the canvas
-   context.drawImage(webcamElement, 0, 0, canvas.width, canvas.height);
+    // Draw the current frame from the webcam onto the canvas
+    context.drawImage(webcamElement, 0, 0, canvas.width, canvas.height);
 
-   placeRing(context,landmarksToSave);
+    placeRing(context, landmarksToSave);
 
-   // Convert the canvas content to a data URL
-   const capturedImage = canvas.toDataURL('image/png');
+    // Convert the canvas content to a data URL
+    const capturedImage = canvas.toDataURL('image/png');
 
-   // Display the captured image
-   document.getElementById('CapturedImage').src = capturedImage;
-   document.getElementById('CapturedImage').style.display = 'block';
+    // Display the captured image
+    document.getElementById('CapturedImage').src = capturedImage;
+    document.getElementById('CapturedImage').style.display = 'block';
 
-   // Stop the webcam
-   if (webcamElement.srcObject) {
-       webcamElement.srcObject.getTracks().forEach(track => track.stop());
-   }
+    // Stop the webcam
+    if (webcamElement.srcObject) {
+        webcamElement.srcObject.getTracks().forEach(track => track.stop());
+    }
 
-   // Show the enable camera button and hide the capture button
-   enableWebcamButton.style.display = 'inline-block';
-   captureButton.style.display = 'none';
+    // Show the enable camera button and hide the capture button
+    enableWebcamButton.style.display = 'inline-block';
+    captureButton.style.display = 'none';
 
-   // Reset webcam running state
-   webcamRunning = false;
+    // Reset webcam running state
+    webcamRunning = false;
 }
 
 
 const divToPlace = document.getElementById('ring-to-place-1');
+const middleRing1 = document.getElementById('ring-1');
+
 let isFlipped = false;
 function placeRing(ctx, landmarks) {
 
@@ -410,9 +407,14 @@ function placeRing(ctx, landmarks) {
     const xL2 = landmark2.x * canvasWidth;
     const yL2 = landmark2.y * canvasHeight;
 
+    const targetPosition = getRingPlacementAt(landmark1, landmark2);
+
     // Calculate the middle point
-    const targetX = (xL1 + xL2) / 2;
-    const targetY = (yL1 + yL2) / 2;
+    /*const targetX = (xL1 + xL2) / 2;
+    const targetY = (yL1 + yL2) / 2;*/
+
+    const targetX = targetPosition.x * canvasWidth;
+    const targetY = targetPosition.y * canvasHeight;
 
     // Calculate rotation angle
     let rotateDeg = Math.atan2(yL2 - yL1, xL2 - xL1) * (180 / Math.PI);
@@ -426,9 +428,9 @@ function placeRing(ctx, landmarks) {
     const scaleX = containerWidth / canvasWidth;
     const scaleY = containerHeight / canvasHeight;
 
-    console.log(scaleX + " : "+scaleY );
-    console.log(containerWidth + " : "+canvasWidth );
-    console.log(containerHeight + " : "+canvasHeight );
+    console.log(scaleX + " : " + scaleY);
+    console.log(containerWidth + " : " + canvasWidth);
+    console.log(containerHeight + " : " + canvasHeight);
 
     // Calculate new position in container coordinates
     let newX = targetX;// * scaleX;
@@ -457,13 +459,88 @@ function placeRing(ctx, landmarks) {
     // Apply styles to the div
     divToPlace.style.position = `absolute`;
 
-    newX = isFlipped ? (canvasWidth-newX) : newX;
+    newX = isFlipped ? (canvasWidth - newX) : newX;
     //rotateDeg+= 90;
 
     rotateDeg = isFlipped ? -rotateDeg : rotateDeg;
 
     divToPlace.style.left = `${newX}px`;
     divToPlace.style.top = `${newY}px`;
-    divToPlace.style.transform = `rotate(${rotateDeg+90}deg) translateX(${translateX}px) translateY(${translateY}px)`;
+    divToPlace.style.transform = `rotate(${rotateDeg + 90}deg) translateX(${translateX}px) translateY(${translateY}px)`;
     divToPlace.style.transformOrigin = '0 0';
+
+    console.log();
+    checkHandSide(landmarks);
+}
+
+
+function getRingPlacementAt(x,y) {
+   
+    // Calculate the vector from x to y
+    const vectorXY = {
+        x: y.x - x.x,
+        y: y.y - x.y
+    };
+
+    // Calculate the length of the vector
+    const lengthXY = Math.sqrt(vectorXY.x ** 2 + vectorXY.y ** 2);
+    var distance = lengthXY * 2/3;
+    const d = distance;
+    // Normalize the vector (unit vector in the direction of y from x)
+    const unitVectorXY = {
+        x: vectorXY.x / lengthXY,
+        y: vectorXY.y / lengthXY
+    };
+
+    // Scale the unit vector by the desired distance d
+    const scaledVector = {
+        x: unitVectorXY.x * d,
+        y: unitVectorXY.y * d
+    };
+
+    // Find the new point at distance d from x
+    const newPoint = {
+        x: x.x + scaledVector.x,
+        y: x.y + scaledVector.y
+    };
+
+    console.log("New point at distance d from x:", newPoint);
+    return newPoint;
+}
+
+function checkHandSide(landmarks) {
+    // Example coordinates (replace with actual coordinates)
+    const wrist = landmarks[0]
+    const thumb = landmarks[1]
+    const pinky = landmarks[17]
+
+    // Calculate vectors
+    const vectorWristToThumb = {
+        x: thumb.x - wrist.x,
+        y: thumb.y - wrist.y,
+        z: thumb.z - wrist.z
+    };
+
+    const vectorWristToPinky = {
+        x: pinky.x - wrist.x,
+        y: pinky.y - wrist.y,
+        z: pinky.z - wrist.z
+    };
+
+    // Compute cross product
+    const crossProduct = {
+        x: vectorWristToThumb.y * vectorWristToPinky.z - vectorWristToThumb.z * vectorWristToPinky.y,
+        y: vectorWristToThumb.z * vectorWristToPinky.x - vectorWristToThumb.x * vectorWristToPinky.z,
+        z: vectorWristToThumb.x * vectorWristToPinky.y - vectorWristToThumb.y * vectorWristToPinky.x
+    };
+
+    // Determine hand orientation
+    if (crossProduct.z > 0) {
+        console.log("Right hand");
+        middleRing1.style.left = `${-56}%`;
+    } else {
+        console.log("Left hand");
+        middleRing1.style.left = `${-42}%`;
+    }
+
 }

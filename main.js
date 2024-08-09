@@ -330,7 +330,7 @@ async function predictWebcam() {
                 });
 
                 // Check if the hand is flat
-                handFlat = isHandFlat1(landmarks, 0.05);// * squareSize / 640);
+                handFlat = isHandFlat1(landmarks, 0.05 * squareSize / 640);
 
                 if (allLandmarksInSquare && handFlat) {
                     //console.log("Hand is in the square!");

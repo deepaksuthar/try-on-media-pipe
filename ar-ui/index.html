@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Jewelry Try-On</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #bab2b2;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .nav {
+
+            display: flex;
+            align-items: center;
+            top: 0px;
+            flex-direction: row;
+
+        }
+
+        .logo {
+            margin: 10px 30px;
+        }
+
+        .camera-view {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #camera {
+            width: 100%;
+            height: auto;
+        }
+
+        .jewelry-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .overlay {
+            position: fixed;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            /* flex-direction: column; */
+            align-items: center;
+            gap: 40px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        button {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .jewelry-carousel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* padding: 20px; */
+            padding-bottom: 5px;
+        }
+
+        .box {
+            display: inline-flex;
+            justify-items: center;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            width: 100%;
+            height: 60px;
+        }
+
+        .box.controls {
+            display: flex;
+            gap: 40px;
+            /* Adjusts the space between items */
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+            /* Background color for each item box */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100vh;
+            height: 149%;
+            /* Adjust the width as needed */
+        }
+
+        .item img {
+            width: 65px;
+            height: 70px;
+            object-fit: cover;
+            margin-right: 15px;
+            border-radius: 5px;
+        }
+
+        .item p {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            color: rgba(2, 2, 2, 0.721);
+        }
+
+        .item button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .item button:hover {
+            background-color: #0056b3;
+        }
+
+        .jewelry-carousel img {
+            width: 95px;
+            height: 91px;
+            margin-left: 5px;
+            align-items: start;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 5px;
+            /* transition: transform 0.3s; */
+        }
+
+        .back-button {
+            /* position: absolute; */
+            top: 30px;
+            /* left: 10px; */
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            /* flex-direction: column; */
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="nav">
+
+        <p class="logo">ViXii</p>
+
+        <div class="back-button">
+            
+            <button>try it on yourself</button>
+        </div>
+
+    </nav>
+
+    <div class="camera-view">
+        
+        <video id="camera" autoplay playsinline></video>
+
+        <div class="overlay">
+
+            <div id="jewelry-carousel" class="jewelry-carousel overlay">
+
+                <div class="box controls">
+
+                    <div class="item">
+                        <img src="images/aayudh-bhattacharya-87aWa1mutzU-unsplash.jpg" alt="Product Image">
+
+                        <p>Name of the product</p>
+
+                        <button>View details</button>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+
+</html>

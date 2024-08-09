@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Landmarks and Body-Skin Mask Detection</title>
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <style>
+        body {
+            font-family: roboto;
+            margin: 2em;
+            color: #3d3d3d;
+            --mdc-theme-primary: #007f8b;
+            --mdc-theme-on-primary: #f1f3f4;
+        }
+
+        h1 {
+            color: #007f8b;
+        }
+
+        .image-upload {
+            margin-bottom: 20px;
+        }
+
+        .segmentOnClick {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            margin: 20px auto;
+            cursor: pointer;
+        }
+
+        .segmentOnClick canvas {
+            width: 100%;
+        }
+
+        .segmentOnClick img {
+            width: 100%;
+        }
+
+        .removed {
+            display: none;
+        }
+
+        .classification {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Hand Landmarks and Body-Skin Mask Detection</h1>
+
+    <section id="demos">
+        <div class="image-upload">
+            <label for="file-input" class="mdc-button mdc-button--raised">
+                <span class="mdc-button__ripple"></span>
+                <span class="mdc-button__label">Select Image</span>
+            </label>
+            <input id="file-input" type="file" accept="image/*" style="display: none;" />
+        </div>
+
+        <div class="segmentOnClick removed">
+            <canvas></canvas>
+            <p class="classification removed">Processing...</p>
+        </div>
+    </section>
+
+    <script type="module">
+        import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+        import { ImageSegmenter } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2";
+
+        let handLandmarker, imageSegmenter;
+        let labels;
+        const demosSection = document.getElementById('demos');
+        const fileInput = document.getElementById('file-input');
+        const segmentOnClick = document.querySelector('.segmentOnClick');
+        const canvas = segmentOnClick.querySelector('canvas');
+        const cxt = canvas.getContext('2d');
+        const classification = document.querySelector('.classification');
+
+        async function createHandLandmarker() {
+            const vision = await FilesetResolver.forVisionTasks(
+                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+            );
+            handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task`,
+                    delegate: "GPU"
+                },
+                runningMode: "IMAGE",
+                numHands: 1,
+                minHandDetectionConfidence: 0.7,
+                minTrackingConfidence: 0.7
+            });
+        }
+
+        async function createImageSegmenter() {
+            const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm");
+            imageSegmenter = await ImageSegmenter.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite",
+                    delegate: "GPU"
+                },
+                runningMode: "IMAGE",
+                outputCategoryMask: true,
+                outputConfidenceMasks: false
+            });
+        }
+
+        createHandLandmarker();
+        createImageSegmenter();
+
+        fileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const img = new Image();
+                img.onload = async () => {
+                    segmentOnClick.classList.remove('removed');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    cxt.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    classification.classList.remove('removed');
+                    classification.innerText = 'Processing...';
+
+                    // Detect hand landmarks
+                    const handLandmarkerResult = await handLandmarker.detect(img);
+
+                    if (handLandmarkerResult.landmarks.length > 0) {
+                        const landmarks = handLandmarkerResult.landmarks[0];
+
+                        // Create body-skin mask
+                        const result = await imageSegmenter.segment(img);
+                        labels = imageSegmenter.getLabels();
+                        const imageData = cxt.getImageData(0, 0, canvas.width, canvas.height);
+                        const mask = result.categoryMask.getAsUint8Array();
+
+                        for (let i = 0; i < mask.length; i++) {
+                            const category = labels[mask[i]];
+                            if (category === "body-skin") {
+                                const alpha = mask[i] ? 255 : 0;
+                                imageData.data[i * 4 + 0] = 0;
+                                imageData.data[i * 4 + 1] = 0;
+                                imageData.data[i * 4 + 2] = 0;
+                                imageData.data[i * 4 + 3] = alpha;
+                            } else {
+                                imageData.data[i * 4 + 3] = 0;
+                            }
+                        }
+
+                        cxt.putImageData(imageData, 0, 0);
+
+                        // Calculate width of middle finger part between landmarks 9 and 10
+                        const canvasWidth = canvas.width;
+                        const canvasHeight = canvas.height;
+
+                        const xL1 = landmarks[9].x * canvasWidth;
+                        const yL1 = landmarks[9].y * canvasHeight;
+                        const xL2 = landmarks[10].x * canvasWidth;
+                        const yL2 = landmarks[10].y * canvasHeight;
+
+                        // Calculate the midpoint between points 9 and 10
+                        const midX = (xL1 + xL2) / 2;
+                        const midY = (yL1 + yL2) / 2;
+
+                        // Calculate the direction vector perpendicular to the line connecting points 9 and 10
+                        const deltaX = xL2 - xL1;
+                        const deltaY = yL2 - yL1;
+                        const perpendicularX = -deltaY;
+                        const perpendicularY = deltaX;
+
+                        // Normalize the perpendicular vector
+                        const magnitude = Math.sqrt(perpendicularX * perpendicularX + perpendicularY * perpendicularY);
+                        const unitX = perpendicularX / magnitude;
+                        const unitY = perpendicularY / magnitude;
+
+                        // Find the width by checking in the perpendicular direction
+                        let leftDistance = 0;
+                        let rightDistance = 0;
+
+                        // Move in the negative direction (left side)
+                        while (true) {
+                            const checkX = Math.round(midX + leftDistance * unitX);
+                            const checkY = Math.round(midY + leftDistance * unitY);
+                            const alphaIndex = (checkY * canvasWidth + checkX) * 4 + 3; // alpha is at the 4th position in RGBA
+
+                            if (checkX < 0 || checkX >= canvasWidth || checkY < 0 || checkY >= canvasHeight || imageData.data[alphaIndex] === 0) {
+                                break;
+                            }
+                            leftDistance--;
+                        }
+
+                        // Move in the positive direction (right side)
+                        while (true) {
+                            const checkX = Math.round(midX + rightDistance * unitX);
+                            const checkY = Math.round(midY + rightDistance * unitY);
+                            const alphaIndex = (checkY * canvasWidth + checkX) * 4 + 3; // alpha is at the 4th position in RGBA
+
+                            if (checkX < 0 || checkX >= canvasWidth || checkY < 0 || checkY >= canvasHeight || imageData.data[alphaIndex] === 0) {
+                                break;
+                            }
+                            rightDistance++;
+                        }
+
+                        const middleFingerWidth = Math.abs(leftDistance) + rightDistance;
+
+                        classification.innerText = `Segmentation Completed. Middle Finger Width: ${middleFingerWidth.toFixed(2)}px`;
+                    } else {
+                        classification.innerText = 'No hand detected';
+                    }
+                };
+                img.src = URL.createObjectURL(file);
+            }
+        });
+    </script>
+</body>
+
+</html>
